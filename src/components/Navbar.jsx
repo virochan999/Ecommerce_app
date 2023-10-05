@@ -1,8 +1,36 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import ProfileImg from '../assets/profile.svg'
+import { useDispatch, useSelector } from 'react-redux'
+import { setCartProducts } from '../Store/productSlice'
+import useApi from '../hooks/useApiCall'
 
 const Navbar = () => {
+  const cartProductState = useSelector((state) => state.product)
+  const { cartProducts, loading, error } = cartProductState
+  const { fetchData } = useApi()
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (!cartProducts.length) {
+      fetchCartData()
+    }
+  },[])
+
+
+  const fetchCartData = async () => {
+
+    const url = 'https://my-json-server.typicode.com/virochan999/JSON/cart';
+    const method = 'GET';
+
+    try {
+      const data = await fetchData(url, method);
+      dispatch(setCartProducts(data));
+    } catch (error) {
+      toast.error("Something went wrong")
+      console.error(error);
+    }
+  }
   return (
     <>
       <div className='p-4 bg-nav-color'>
@@ -17,7 +45,9 @@ const Navbar = () => {
               </Link>
             </div>
             <div className='flex justify-center items-center'>
-              <Link to='/cart'>Cart</Link>
+              <Link className='relative' to='/cart'>Cart 
+                <span className='absolute bottom-3 -right-5 flex justify-center items-center h-5 w-5 rounded-full bg-sky-500 text-xs text-white'>{!loading && cartProducts.length}</span> 
+              </Link>
             </div>
           </div>
           <div className='flex items-center'>
